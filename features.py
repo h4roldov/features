@@ -6,20 +6,42 @@ import statistics
 def run(args):
     input_dataset = open(args.input_file, "r")
     output_file = open(args.output_file, "w")
+    output_file.write(
+        "Time\tRMS-x\tRMS-y\tRMS-z\t" +
+        "Mean-x\t Mean-y\t Mean-z\t " +
+        "Max-x\t Max-y\t Max-z\t " +
+        "Min-x\t Min-y\t Min-z\t " +
+        "IQR-x\t IQR-y\t IQR-z\t " +
+        "Variance-x\t Variance-y\t Variance-z\t " +
+        "Std-x\tStd-y\t Std-z\t ")
+    output_file.close()
     eje_x = []
     eje_y = []
     eje_z = []
-    # lines_to_evaluate = args.lines
+    _time = []
+    svm = []
+    lines_to_evaluate = args.lines
     lines = input_dataset.readlines()
     number_of_lines = len(lines)
     print(number_of_lines)
 
+    i = 0
+    output_file = open(args.output_file, "a")
     for line in lines[4:]:
         line = line.split(",", 7)[:4]
+        _time.append(float(line[0]))
         eje_x.append(float(line[1]))
         eje_y.append(float(line[2]))
         eje_z.append(float(line[3]))
-
+        svm.append(line)
+        if(i % lines_to_evaluate == 0 and i != 0):
+            _results(eje_x, eje_y, eje_z, _time, output_file)
+            eje_x = []
+            eje_y = []
+            eje_z = []
+            _time = []
+        i += 1
+    output_file.close()
     # for element in eje_x:
     #     print(element)
     listaz = [7, 7, 31, 31, 47, 75, 87, 115, 116, 119, 119, 155, 177]
@@ -29,43 +51,40 @@ def run(args):
     print(std(listaz))
     print(mean_(listaz))
     print(variance(listaz))
+    # SVM(listaz)
 
+
+def _results(eje_x, eje_y, eje_z, _time, output_file):
     # Results string
-    results = (" RMS: " +
-               "\n x = " + str(RMS(eje_x)) +
-               "\n y = " + str(RMS(eje_y)) +
-               "\n z = " + str(RMS(eje_z)) +
-               "\n Mean : " +
-               "\n x = " + str(mean_(eje_x)) +
-               "\n y = " + str(mean_(eje_y)) +
-               "\n z = " + str(mean_(eje_z)) +
-               "\n Max : " +
-               "\n x = " + str(max(eje_x)) +
-               "\n y = " + str(max(eje_y)) +
-               "\n z = " + str(max(eje_z)) +
-               "\n Min : " +
-               "\n x = " + str(min(eje_x)) +
-               "\n y = " + str(min(eje_y)) +
-               "\n z = " + str(min(eje_z)) +
-               "\n IQR : " +
-               "\n x = " + str(IQR(eje_x)) +
-               "\n y = " + str(IQR(eje_y)) +
-               "\n z = " + str(IQR(eje_z)) +
-               "\n Variance : " +
-               "\n x = " + str(variance(eje_x)) +
-               "\n y = " + str(variance(eje_y)) +
-               "\n z = " + str(variance(eje_z)) +
-               "\n Standard deviation : " +
-               "\n x = " + str(std(eje_x)) +
-               "\n y = " + str(std(eje_y)) +
-               "\n z = " + str(std(eje_z)))
+    results = (str(round(mean_(_time), 2)) +
+               "\t"+str(round(RMS(eje_x), 2)) +
+               "\t"+str(round(RMS(eje_y), 2)) +
+               "\t"+str(round(RMS(eje_z), 2)) +
+               "\t"+str(round(mean_(eje_x), 2)) +
+               "\t"+str(round(mean_(eje_y), 2)) +
+               "\t"+str(round(mean_(eje_z), 2)) +
+               "\t"+str(round(max(eje_x), 2)) +
+               "\t"+str(round(max(eje_y), 2)) +
+               "\t"+str(round(max(eje_z), 2)) +
+               "\t"+str(round(min(eje_x), 2)) +
+               "\t"+str(round(min(eje_y), 2)) +
+               "\t"+str(round(min(eje_z), 2)) +
+               "\t"+str(round(IQR(eje_x), 2)) +
+               "\t"+str(round(IQR(eje_y), 2)) +
+               "\t"+str(round(IQR(eje_z), 2)) +
+               "\t\t"+str(round(variance(eje_x), 2)) +
+               "\t\t"+str(round(variance(eje_y), 2)) +
+               "\t\t"+str(round(variance(eje_z), 2)) +
+               "\t"+str(round(std(eje_x), 2)) +
+               "\t"+str(round(std(eje_y), 2)) +
+               "\t"+str(round(std(eje_z), 2)))
 
     # Adds the results string into the results.txt file
-    output_file.write(results)
-    output_file.close()
+    output_file.write(results + '\n')
+
     print(statistics.mean(eje_x))
 
- # Mean
+# Mean
 
 
 def mean_(list_):
@@ -130,7 +149,17 @@ def skewness(list_):
     mean = mean_(list_)
     return (sum((xi - mean)**3 for xi in list_)/(len(list_)-1))/(std(list_)**3)
 
-    # argparse
+# Single vector magnitude
+
+
+def SVM(list_):
+    svm = []
+    for element in list_:
+        svm.append(
+            float(math.sqrt(float(element[1])**2 + float(element[2])**2 + float(element[3])**2)))
+        print(svm)
+    return svm
+ # argparse
 
 
 def main():
